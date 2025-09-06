@@ -1,1 +1,1 @@
-{\n  "name": "odooxnmit-25",\n  "version": "1.0.0",\n  "private": true,\n  "scripts": {\n    "start": "echo \"Specify client/server start scripts\""\n  }\n}
+{\n  "name": "odooxnmit-25-server",\n  "version": "1.0.0",\n  "main": "src/app.js",\n  "scripts": {\n    "start": "node src/app.js",\n    "test": "echo \"No tests specified\" && exit 0"\n  },\n  "dependencies": {\n    "express": "^4.18.2"\n  }\n}
