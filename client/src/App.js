@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
@@ -7,61 +8,41 @@ import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in when app loads
   useEffect(() => {
-    const checkAuth = () => {
-      if (authService.isAuthenticated()) {
-        const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
-      }
-      setLoading(false);
-    };
-
-    checkAuth();
+    if (authService.isAuthenticated()) {
+      setUser(authService.getCurrentUser());
+    }
+    setLoading(false);
   }, []);
-
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
-
-  const handleSignup = (userData) => {
-    setUser(userData);
-  };
 
   const handleLogout = () => {
     authService.logout();
     setUser(null);
   };
 
-  const switchToSignup = () => setIsLogin(false);
-  const switchToLogin = () => setIsLogin(true);
-
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading SynergySphere...</p>
-      </div>
-    );
-  }
+  if (loading) return <p>Loading SynergySphere...</p>;
 
   return (
-    <div className="App">
-      {user ? (
-        <Dashboard user={user} onLogout={handleLogout} />
-      ) : (
-        <>
-          {isLogin ? (
-            <Login onLogin={handleLogin} switchToSignup={switchToSignup} />
-          ) : (
-            <Signup onSignup={handleSignup} switchToLogin={switchToLogin} />
-          )}
-        </>
-      )}
-    </div>
+    <Router>
+      <Routes>
+        {!user ? (
+          <>
+            <Route path="/login" element={<Login onLogin={setUser} />} />
+            <Route path="/signup" element={<Signup onSignup={setUser} />} />
+            {/* if user is not logged in and tries to go anywhere else, redirect to login */}
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        ) : (
+          <>
+            <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />} />
+            {/* redirect any other path to dashboard */}
+            <Route path="*" element={<Navigate to="/dashboard" />} />
+          </>
+        )}
+      </Routes>
+    </Router>
   );
 }
 

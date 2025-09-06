@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
+import { useNavigate, Link } from 'react-router-dom';
 import './Auth.css';
 
-const Signup = ({ onSignup, switchToLogin }) => {
+const Signup = ({ onSignup }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    // Clear error when user starts typing
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError('');
   };
 
@@ -25,9 +24,8 @@ const Signup = ({ onSignup, switchToLogin }) => {
     setLoading(true);
     setError('');
 
-    // Basic validation
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       setLoading(false);
       return;
     }
@@ -35,8 +33,9 @@ const Signup = ({ onSignup, switchToLogin }) => {
     try {
       const response = await authService.register(formData);
       onSignup(response.user);
+      navigate('/dashboard'); // go to dashboard after signup
     } catch (err) {
-      setError(err);
+      setError(typeof err === 'string' ? err : err.error || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -93,6 +92,20 @@ const Signup = ({ onSignup, switchToLogin }) => {
             />
           </div>
 
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              placeholder="Re-enter your password"
+              disabled={loading}
+            />
+          </div>
+
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="auth-button" disabled={loading}>
@@ -102,14 +115,7 @@ const Signup = ({ onSignup, switchToLogin }) => {
 
         <div className="auth-footer">
           <p>
-            Already have an account?{' '}
-            <button 
-              type="button" 
-              className="link-button" 
-              onClick={switchToLogin}
-            >
-              Login
-            </button>
+            Already have an account? <Link to="/login">Login</Link>
           </p>
         </div>
       </div>

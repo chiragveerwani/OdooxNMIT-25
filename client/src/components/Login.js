@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
+import { useNavigate, Link } from 'react-router-dom';
 import './Auth.css';
 
-const Login = ({ onLogin, switchToSignup }) => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+const Login = ({ onLogin }) => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    // Clear error when user starts typing
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError('');
   };
 
@@ -27,8 +22,9 @@ const Login = ({ onLogin, switchToSignup }) => {
     try {
       const response = await authService.login(formData);
       onLogin(response.user);
+      navigate('/dashboard'); // go to dashboard after login
     } catch (err) {
-      setError(err);
+      setError(typeof err === 'string' ? err : err.error || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -80,14 +76,7 @@ const Login = ({ onLogin, switchToSignup }) => {
 
         <div className="auth-footer">
           <p>
-            Don't have an account?{' '}
-            <button 
-              type="button" 
-              className="link-button" 
-              onClick={switchToSignup}
-            >
-              Sign up
-            </button>
+            Don’t have an account? <Link to="/signup">Sign up</Link>
           </p>
         </div>
       </div>
